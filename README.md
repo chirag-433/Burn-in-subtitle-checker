@@ -3,8 +3,22 @@
 Automatically detect mismatches between spoken dialogue and burned-in subtitles in video files. Supports Hindi (Devanagari) and Kannada scripts.
 
 ---
-<img width="1881" height="868" alt="image" src="https://github.com/user-attachments/assets/e31057b2-5df1-4f22-a322-2d8238bbae1d" />
-<img width="1877" height="692" alt="image" src="https://github.com/user-attachments/assets/5f510dbf-f6e0-4dc4-853a-ab9ff9af6919" />
+
+## Demo
+
+The generated HTML report highlights matches, flags discrepancies, and categorizes errors dynamically:
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/e31057b2-5df1-4f22-a322-2d8238bbae1d" alt="Report Overview" width="850">
+  <br>
+  <em>High-level statistics and clean report interface.</em>
+</p>
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/5f510dbf-f6e0-4dc4-853a-ab9ff9af6919" alt="Mismatch Reasons" width="850">
+  <br>
+  <em>Detailed row view showing exact reasons for discrepancies (e.g., low similarity, missing subtitles).</em>
+</p>
 
 ## Features
 
