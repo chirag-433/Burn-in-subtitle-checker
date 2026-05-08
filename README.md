@@ -3,6 +3,8 @@
 Automatically detect mismatches between spoken dialogue and burned-in subtitles in video files. Supports Hindi (Devanagari) and Kannada scripts.
 
 ---
+<img width="1881" height="868" alt="image" src="https://github.com/user-attachments/assets/e31057b2-5df1-4f22-a322-2d8238bbae1d" />
+<img width="1877" height="692" alt="image" src="https://github.com/user-attachments/assets/5f510dbf-f6e0-4dc4-853a-ab9ff9af6919" />
 
 ## Features
 
