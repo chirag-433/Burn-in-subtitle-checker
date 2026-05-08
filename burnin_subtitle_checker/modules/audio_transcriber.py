@@ -11,11 +11,20 @@ import os
 import tempfile
 from typing import Any, Dict, List, Optional
 
-from faster_whisper import WhisperModel
+try:
+    from faster_whisper import WhisperModel
+    HAS_FASTER_WHISPER = True
+except (ImportError, ModuleNotFoundError):
+    import whisper
+    HAS_FASTER_WHISPER = False
 
 from burnin_subtitle_checker.utils.video_utils import extract_audio
 
 logger = logging.getLogger(__name__)
+
+if not HAS_FASTER_WHISPER:
+    logger.warning("faster-whisper failed to load (likely due to 'av' compatibility). Falling back to standard openai-whisper.")
+
 
 # ──────────────────────────────────────────────
 # Type aliases
@@ -58,34 +67,42 @@ def transcribe_video(
     audio_path = os.path.join(tmp_dir, "audio.wav")
     extract_audio(video_path, audio_path)
 
-    # ── 2. Load Whisper model ──
-    logger.info("Loading Whisper model '%s' (int8)…", model_size)
-    model = WhisperModel(model_size, device=device or "auto", compute_type="int8")
-
-    # ── 3. Transcribe ──
-    logger.info("Transcribing audio…")
-    transcribe_opts: Dict[str, Any] = {
-        "vad_filter": True,
-        "vad_parameters": dict(min_silence_duration_ms=500),
-    }
-    if language:
-        transcribe_opts["language"] = language
-
-    segments_generator, info = model.transcribe(audio_path, **transcribe_opts)
-
-    # ── 4. Build clean segment list ──
+    # ── 2. Load and Transcribe ──
     segments: List[TranscriptSegment] = []
-    for seg in segments_generator:
-        start = round(seg.start, 3)
-        end = round(seg.end, 3)
-        segments.append({
-            "start": start,
-            "end": end,
-            "midpoint": round((start + end) / 2, 3),
-            "text": seg.text.strip(),
-        })
+
+    if HAS_FASTER_WHISPER:
+        logger.info("Loading faster-whisper model '%s' (int8)…", model_size)
+        try:
+            model = WhisperModel(model_size, device=device or "auto", compute_type="int8")
+            
+            logger.info("Transcribing audio…")
+            transcribe_opts: Dict[str, Any] = {
+                "vad_filter": True,
+                "vad_parameters": dict(min_silence_duration_ms=500),
+            }
+            if language:
+                transcribe_opts["language"] = language
+
+            segments_generator, info = model.transcribe(audio_path, **transcribe_opts)
+
+            for seg in segments_generator:
+                start = round(seg.start, 3)
+                end = round(seg.end, 3)
+                segments.append({
+                    "start": start,
+                    "end": end,
+                    "midpoint": round((start + end) / 2, 3),
+                    "text": seg.text.strip(),
+                })
+        except Exception as exc:
+            logger.error("faster-whisper transcription failed: %s. Trying standard whisper...", exc)
+            # Re-try with standard whisper if it fails at runtime
+            segments = _transcribe_standard(audio_path, model_size, language, device)
+    else:
+        segments = _transcribe_standard(audio_path, model_size, language, device)
 
     logger.info("Transcription complete — %d segments found.", len(segments))
+
 
     # ── 5. Optionally save to JSON ──
     if output_json:
@@ -101,6 +118,32 @@ def transcribe_video(
     return segments
 
 
+
+
+def _transcribe_standard(
+    audio_path: str,
+    model_size: str,
+    language: Optional[str],
+    device: Optional[str],
+) -> List[TranscriptSegment]:
+    """Helper for standard openai-whisper transcription."""
+    logger.info("Loading standard whisper model '%s'…", model_size)
+    model = whisper.load_model(model_size, device=device)
+    
+    logger.info("Transcribing audio (standard)…")
+    result = model.transcribe(audio_path, language=language)
+    
+    segments: List[TranscriptSegment] = []
+    for seg in result["segments"]:
+        start = round(seg["start"], 3)
+        end = round(seg["end"], 3)
+        segments.append({
+            "start": start,
+            "end": end,
+            "midpoint": round((start + end) / 2, 3),
+            "text": seg["text"].strip(),
+        })
+    return segments
 
 
 def save_transcript(

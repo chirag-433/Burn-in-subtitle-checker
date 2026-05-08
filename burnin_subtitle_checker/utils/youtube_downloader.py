@@ -22,19 +22,15 @@ def download_video(url: str, output_dir: str = "downloads") -> str:
     os.makedirs(output_dir, exist_ok=True)
     
     ydl_opts = {
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'outtmpl': os.path.join(output_dir, '%(title)s.%(ext)s'),
-        'merge_output_format': 'mp4',
         'quiet': True,
         'no_warnings': True,
+        'extractor_args': {'youtube': {'player_client': ['android', 'web']}},
+        'referer': 'https://www.youtube.com/',
+        'user_agent': 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
     }
     
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(url, download=True)
         video_path = ydl.prepare_filename(info_dict)
-        
-        # If merged, the extension might have changed to mp4
-        if not video_path.endswith('.mp4'):
-            base, _ = os.path.splitext(video_path)
-            video_path = f"{base}.mp4"
     return os.path.abspath(video_path)

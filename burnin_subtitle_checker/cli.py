@@ -56,10 +56,11 @@ def main() -> int:
             video_path = download_video(video_path, output_dir="downloads")
         except Exception as exc:
             logger.exception("Failed to download video")
-            print(f"✗ Failed to download video: {exc}")
+            print(f"Error: YouTube blocked the download (Bot Protection/No Formats).")
+            print(f"Please download the video manually and run: python -m burnin_subtitle_checker run video.mp4 --language hi")
             return 1
     elif not os.path.isfile(video_path):
-        print(f"✗ Video file not found: {video_path}")
+        print(f"Error: Video file not found: {video_path}")
         return 1
 
     video_name = os.path.basename(video_path)
@@ -81,7 +82,7 @@ def main() -> int:
         )
     except Exception as exc:
         logger.exception("Transcription failed")
-        print(f"x Transcription failed: {exc}")
+        print(f"Error: Transcription failed: {exc}")
         return 1
 
     # ── Step 2: Subtitle Extraction ──
@@ -99,7 +100,7 @@ def main() -> int:
         )
     except Exception as exc:
         logger.exception("Subtitle extraction failed")
-        print(f"x OCR extraction failed: {exc}")
+        print(f"Error: OCR extraction failed: {exc}")
         return 1
 
     # ── Step 3: Mismatch Detection ──
