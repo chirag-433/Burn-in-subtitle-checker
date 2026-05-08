@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audio-Subtitle Mismatch Report</title>
+<style>
+  :root {
+    --bg: #f8fafc; --surface: #ffffff; --border: #e2e8f0;
+    --text: #1e293b; --muted: #64748b;
+    --green: #16a34a; --yellow: #ca8a04; --red: #dc2626;
+    --accent: #2563eb;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6;
+    padding: 2rem; max-width: 1400px; margin: 0 auto;
+  }
+  h1 {
+    font-size: 1.8rem; font-weight: 700;
+    color: var(--text);
+    margin-bottom: .25rem;
+  }
+  .subtitle { color: var(--muted); font-size: .9rem; margin-bottom: 2rem; }
+  .summary-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+    gap: 1rem; margin-bottom: 2rem;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 1.25rem; text-align: center;
+  }
+  .card .value { font-size: 2rem; font-weight: 700; }
+  .card .label { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .card.match .value { color: var(--green); }
+  .card.review .value { color: var(--yellow); }
+  .card.missing .value { color: var(--red); }
+  .card.score .value { color: var(--accent); }
+  .table-wrap {
+    overflow-x: auto; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 6px;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  th {
+    background: #f1f5f9; padding: .85rem 1rem; text-align: left;
+    font-weight: 600; color: var(--muted); text-transform: uppercase;
+    font-size: .75rem; letter-spacing: .05em; position: sticky; top: 0;
+  }
+  td { padding: .75rem 1rem; border-top: 1px solid var(--border); vertical-align: top; }
+  tr:hover td { background-color: #f8fafc; }
+  .status-badge {
+    display: inline-block; padding: .2rem .65rem; border-radius: 4px;
+    font-size: .75rem; font-weight: 600; text-transform: uppercase;
+  }
+  .badge-match   { background: #dcfce7; color: var(--green); }
+  .badge-review  { background: #fef08a; color: var(--yellow); }
+  .badge-missing { background: #fee2e2; color: var(--red); }
+  .score-bar {
+    width: 100%; height: 6px; background: var(--border); border-radius: 3px;
+    overflow: hidden; margin-top: 4px;
+  }
+  .score-fill { height: 100%; border-radius: 3px; transition: width .3s; }
+  
+  /* Simplify: No full row background colors, just the reason column */
+  td.reason-match { background-color: #e6ffe6 !important; }
+  td.reason-review { background-color: #fffbeb !important; }
+  td.reason-mismatch { background-color: #ffe6e6 !important; }
+  
+  footer {
+    text-align: center; color: var(--muted); font-size: .8rem;
+    margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border);
+  }
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .summary-grid { grid-template-columns: repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+<h1>Audio-Subtitle Mismatch Report</h1>
+<p class="subtitle">Generated on 2026-05-08 17:34:16 &mdash; sample_hindi_kannada.mp4</p>
+
+<div class="summary-grid">
+  <div class="card"><div class="value">8</div><div class="label">Total Segments</div></div>
+  <div class="card match"><div class="value">5</div><div class="label">Matched (62.5%)</div></div>
+  <div class="card review"><div class="value">2</div><div class="label">Review (25.0%)</div></div>
+  <div class="card missing"><div class="value">1</div><div class="label">Missing (12.5%)</div></div>
+  <div class="card score"><div class="value">73.38</div><div class="label">Avg Score</div></div>
+</div>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>#</th><th>Timestamp</th><th>Audio Text</th>
+      <th>Subtitle Text</th><th>Score</th><th>Status</th><th>Reason</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>00:00:05.200</td><td>नमस्ते दोस्तों</td><td>नमस्ते दोस्तों</td><td>100.0<div class="score-bar"><div class="score-fill" style="width:100.0%;background:var(--green);"></div></div></td><td><span class="status-badge badge-match">MATCH</span></td><td class="reason-match">perfect match</td></tr>
+    <tr><td>2</td><td>00:00:10.200</td><td>वो कहाँ गई थी</td><td>वो कहाँ गया था</td><td>61.0<div class="score-bar"><div class="score-fill" style="width:61.0%;background:var(--yellow);"></div></div></td><td><span class="status-badge badge-review">REVIEW</span></td><td class="reason-review">low similarity</td></tr>
+    <tr><td>3</td><td>00:00:18.500</td><td>आज मौसम बहुत अच्छा है</td><td>आज मौसम बहुत अच्छा है</td><td>100.0<div class="score-bar"><div class="score-fill" style="width:100.0%;background:var(--green);"></div></div></td><td><span class="status-badge badge-match">MATCH</span></td><td class="reason-match">perfect match</td></tr>
+    <tr><td>4</td><td>00:00:25.000</td><td>ಹೇಗಿದ್ದೀರಿ ನೀವು</td><td>ಹೇಗಿದ್ದೀರಿ ನೀವು</td><td>100.0<div class="score-bar"><div class="score-fill" style="width:100.0%;background:var(--green);"></div></div></td><td><span class="status-badge badge-match">MATCH</span></td><td class="reason-match">perfect match</td></tr>
+    <tr><td>5</td><td>00:00:32.800</td><td>ये बात सही नहीं है</td><td>ये बात गलत है</td><td>48.0<div class="score-bar"><div class="score-fill" style="width:48.0%;background:var(--yellow);"></div></div></td><td><span class="status-badge badge-review">REVIEW</span></td><td class="reason-review">low similarity</td></tr>
+    <tr><td>6</td><td>00:00:40.100</td><td>चलो अब चलते हैं</td><td><em>&mdash;</em></td><td>0.0<div class="score-bar"><div class="score-fill" style="width:0.0%;background:var(--red);"></div></div></td><td><span class="status-badge badge-missing">MISSING</span></td><td class="reason-mismatch">missing subtitle</td></tr>
+    <tr><td>7</td><td>00:00:47.300</td><td>ಈ ಚಿತ್ರ ತುಂಬಾ ಚೆನ್ನಾಗಿದೆ</td><td>ಈ ಚಿತ್ರ ಚೆನ್ನಾಗಿದೆ</td><td>78.0<div class="score-bar"><div class="score-fill" style="width:78.0%;background:var(--green);"></div></div></td><td><span class="status-badge badge-match">MATCH</span></td><td class="reason-match">high similarity</td></tr>
+    <tr><td>8</td><td>00:00:55.000</td><td>मुझे यह पसंद आया</td><td>मुझे यह पसंद आया</td><td>100.0<div class="score-bar"><div class="score-fill" style="width:100.0%;background:var(--green);"></div></div></td><td><span class="status-badge badge-match">MATCH</span></td><td class="reason-match">perfect match</td></tr>
+  </tbody>
+</table>
+</div>
+
+<footer>Lightweight Audio-Subtitle Mismatch Flagging Tool &copy; 2026</footer>
+</body>
+</html>
