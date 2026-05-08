@@ -14,8 +14,9 @@ tqdm>=4.66.0
 colorama>=0.4.6
 
 # Testing
-pytest>=7.4.0
-pytest-cov>=4.1.0
+pytest==8.2.2
+pytest-cov==5.0.0
+yt-dlp==2024.4.9
 
 # Optional: GPU support (uncomment if CUDA available)
 # torch>=2.0.0+cu118

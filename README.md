@@ -132,8 +132,14 @@ python -m pytest tests/ -v
 
 ### Basic Usage
 
+You can pass a local video file or a YouTube URL directly:
+
 ```bash
+# Local video
 python main.py path/to/video.mp4
+
+# YouTube URL
+python main.py https://www.youtube.com/watch?v=YOUR_VIDEO_ID
 ```
 
 ### Full Options
@@ -153,7 +159,7 @@ python main.py video.mp4 \
 
 | Argument | Short | Default | Description |
 |---|---|---|---|
-| `video` | — | *required* | Path to input video file |
+| `video` | — | *required* | Path to input video file or YouTube URL |
 | `--model` | `-m` | `base` | Whisper model: tiny, base, small, medium, large |
 | `--language` | `-l` | `hi kn` | Language codes for OCR and Whisper |
 | `--threshold` | `-t` | `75.0` | Similarity threshold (0-100) |

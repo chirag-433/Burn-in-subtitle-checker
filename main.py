@@ -11,6 +11,7 @@ CLI entry point.  Processes a video end-to-end:
 
 Usage:
     python main.py input.mp4
+    python main.py https://www.youtube.com/watch?v=...
     python main.py input.mp4 --language hi --model medium --threshold 70
     python main.py input.mp4 --save-intermediates
 """
@@ -48,11 +49,21 @@ def main() -> int:
     logger = logging.getLogger(__name__)
 
     # ── Validate input ──
-    if not os.path.isfile(args.video):
-        print(f"{Fore.RED}✗ Video file not found: {args.video}{Style.RESET_ALL}")
+    video_path = args.video
+    if video_path.startswith("http://") or video_path.startswith("https://"):
+        from utils.youtube_downloader import download_video
+        _step_header("0", "Downloading video")
+        try:
+            video_path = download_video(video_path, output_dir="downloads")
+        except Exception as exc:
+            logger.exception("Failed to download video")
+            print(f"{Fore.RED}✗ Failed to download video: {exc}{Style.RESET_ALL}")
+            return 1
+    elif not os.path.isfile(video_path):
+        print(f"{Fore.RED}✗ Video file not found: {video_path}{Style.RESET_ALL}")
         return 1
 
-    video_name = os.path.basename(args.video)
+    video_name = os.path.basename(video_path)
     run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
     report_dir = args.output_dir or os.path.join("reports", run_id)
     os.makedirs(report_dir, exist_ok=True)
@@ -74,7 +85,7 @@ def main() -> int:
     transcript_json = os.path.join(report_dir, "transcript.json") if args.save_intermediates else None
     try:
         transcript = transcribe_video(
-            video_path=args.video,
+            video_path=video_path,
             model_size=args.model,
             language=args.language[0],  # PR #10: always force language
             output_json=transcript_json,
@@ -91,7 +102,7 @@ def main() -> int:
     subtitles_json = os.path.join(report_dir, "subtitles.json") if args.save_intermediates else None
     try:
         subtitles = extract_subtitles(
-            video_path=args.video,
+            video_path=video_path,
             segments=transcript,
             languages=args.language,
             crop_fraction=args.crop_fraction,
@@ -137,7 +148,7 @@ def _parse_args() -> argparse.Namespace:
         prog="audio-subtitle-mismatch",
         description="Detect mismatches between spoken audio and burned-in subtitles.",
     )
-    parser.add_argument("video", help="Path to the input video file.")
+    parser.add_argument("video", help="Path to the input video file or YouTube URL.")
     parser.add_argument(
         "--model", "-m", default=DEFAULT_MODEL,
         choices=["tiny", "base", "small", "medium", "large"],
