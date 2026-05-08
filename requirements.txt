@@ -1,5 +1,6 @@
 # Core dependencies
-faster-whisper>=1.0.0
+faster-whisper==1.0.3
+tokenizers==0.19.1
 opencv-python>=4.8.0
 pytesseract>=0.3.10
 rapidfuzz>=3.5.0
