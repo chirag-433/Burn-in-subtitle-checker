@@ -1,0 +1,26 @@
+# Core dependencies
+openai-whisper>=20231117
+opencv-python>=4.8.0
+pytesseract>=0.3.10
+rapidfuzz>=3.5.0
+ffmpeg-python>=0.2.0
+numpy>=1.24.0
+Pillow>=10.0.0
+unicodedata2>=15.1.0
+Jinja2>=3.1.2
+
+# CLI and utilities
+tqdm>=4.66.0
+colorama>=0.4.6
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+
+# Optional: GPU support (uncomment if CUDA available)
+# torch>=2.0.0+cu118
+
+# Optional: Web dashboard
+# fastapi>=0.104.0
+# uvicorn>=0.24.0
+# python-multipart>=0.0.6
