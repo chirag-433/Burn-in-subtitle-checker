@@ -25,10 +25,10 @@ from datetime import datetime
 
 from colorama import Fore, Style, init as colorama_init
 
-from modules.audio_transcriber import transcribe_video
-from modules.subtitle_extractor import extract_subtitles
-from modules.mismatch_detector import detect_mismatches, compute_summary_statistics
-from modules.report_generator import generate_report
+from burnin_subtitle_checker.modules.audio_transcriber import transcribe_video
+from burnin_subtitle_checker.modules.subtitle_extractor import extract_subtitles
+from burnin_subtitle_checker.modules.mismatch_detector import detect_mismatches, compute_summary_statistics
+from burnin_subtitle_checker.modules.report_generator import generate_report
 
 
 # ──────────────────────────────────────────────
@@ -51,7 +51,7 @@ def main() -> int:
     # ── Validate input ──
     video_path = args.video
     if video_path.startswith("http://") or video_path.startswith("https://"):
-        from utils.youtube_downloader import download_video
+        from burnin_subtitle_checker.utils.youtube_downloader import download_video
         _step_header("0", "Downloading video")
         try:
             video_path = download_video(video_path, output_dir="downloads")
@@ -145,49 +145,53 @@ def main() -> int:
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog="audio-subtitle-mismatch",
+        prog="burnin_subtitle_checker",
         description="Detect mismatches between spoken audio and burned-in subtitles.",
     )
-    parser.add_argument("video", help="Path to the input video file or YouTube URL.")
     parser.add_argument(
+        "--version", action="version", version=f"%(prog)s {VERSION}",
+    )
+
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    run_parser = subparsers.add_parser("run", help="Run the mismatch pipeline.")
+    
+    run_parser.add_argument("video", help="Path to the input video file or YouTube URL.")
+    run_parser.add_argument(
         "--model", "-m", default=DEFAULT_MODEL,
         choices=["tiny", "base", "small", "medium", "large"],
         help="Whisper model size (default: base).",
     )
-    parser.add_argument(
+    run_parser.add_argument(
         "--language", "-l", nargs="+", default=DEFAULT_LANGUAGES,
         help="Language codes for OCR/Whisper, e.g. hi kn (default: hi kn).",
     )
-    parser.add_argument(
+    run_parser.add_argument(
         "--threshold", "-t", type=float, default=DEFAULT_THRESHOLD,
         help="Similarity threshold 0–100 (default: 75).",
     )
-    parser.add_argument(
+    run_parser.add_argument(
         "--output-dir", "-o",
         help="Custom output directory for reports.",
     )
-    parser.add_argument(
+    run_parser.add_argument(
         "--crop-fraction", type=float, default=0.20,
         help="Bottom fraction of frame to crop for OCR (default: 0.20).",
     )
-    parser.add_argument(
+    run_parser.add_argument(
         "--device", choices=["cpu", "cuda"],
         help="Force Whisper to use a specific device.",
     )
-    parser.add_argument(
+    run_parser.add_argument(
         "--save-intermediates", action="store_true",
         help="Save transcript, subtitles, and results as JSON.",
     )
-    parser.add_argument(
+    run_parser.add_argument(
         "--save-frames", action="store_true",
         help="Save preprocessed OCR frames to disk.",
     )
-    parser.add_argument(
+    run_parser.add_argument(
         "--verbose", "-v", action="store_true",
         help="Enable debug-level logging.",
-    )
-    parser.add_argument(
-        "--version", action="version", version=f"%(prog)s {VERSION}",
     )
     return parser.parse_args()
 

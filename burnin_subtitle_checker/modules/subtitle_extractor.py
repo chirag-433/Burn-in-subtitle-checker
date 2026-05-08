@@ -15,8 +15,8 @@ import cv2
 import numpy as np
 import pytesseract
 
-from utils.text_utils import clean_ocr_text, is_meaningful_text
-from utils.video_utils import capture_frame, crop_subtitle_region, preprocess_for_ocr
+from burnin_subtitle_checker.utils.text_utils import clean_ocr_text, is_meaningful_text
+from burnin_subtitle_checker.utils.video_utils import capture_frame, crop_subtitle_region, preprocess_for_ocr
 
 logger = logging.getLogger(__name__)
 

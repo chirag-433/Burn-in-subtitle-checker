@@ -7,7 +7,7 @@ import tempfile
 
 import pytest
 
-from modules.report_generator import generate_report
+from burnin_subtitle_checker.modules.report_generator import generate_report
 
 
 def _sample_results():

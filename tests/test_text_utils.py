@@ -3,7 +3,7 @@ Unit tests for the text_utils module.
 """
 
 import pytest
-from utils.text_utils import (
+from burnin_subtitle_checker.utils.text_utils import (
     normalize_indic_text,
     clean_ocr_text,
     compute_text_length,

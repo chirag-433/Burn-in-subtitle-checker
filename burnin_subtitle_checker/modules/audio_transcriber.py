@@ -11,9 +11,9 @@ import os
 import tempfile
 from typing import Any, Dict, List, Optional
 
-import whisper
+from faster_whisper import WhisperModel
 
-from utils.video_utils import extract_audio
+from burnin_subtitle_checker.utils.video_utils import extract_audio
 
 logger = logging.getLogger(__name__)
 
@@ -59,24 +59,32 @@ def transcribe_video(
     extract_audio(video_path, audio_path)
 
     # ── 2. Load Whisper model ──
-    logger.info("Loading Whisper model '%s'…", model_size)
-    model = whisper.load_model(model_size, device=device)
+    logger.info("Loading Whisper model '%s' (int8)…", model_size)
+    model = WhisperModel(model_size, device=device or "auto", compute_type="int8")
 
     # ── 3. Transcribe ──
     logger.info("Transcribing audio…")
     transcribe_opts: Dict[str, Any] = {
-        "verbose": False,
-        "task": "transcribe",
+        "vad_filter": True,
+        "vad_parameters": dict(min_silence_duration_ms=500),
     }
-    # Force language to avoid Whisper misidentifying Indic audio
-    # (PR #10 insight: auto-detect often fails for Hindi/Kannada)
     if language:
         transcribe_opts["language"] = language
 
-    result = model.transcribe(audio_path, **transcribe_opts)
+    segments_generator, info = model.transcribe(audio_path, **transcribe_opts)
 
     # ── 4. Build clean segment list ──
-    segments = _build_segments(result)
+    segments: List[TranscriptSegment] = []
+    for seg in segments_generator:
+        start = round(seg.start, 3)
+        end = round(seg.end, 3)
+        segments.append({
+            "start": start,
+            "end": end,
+            "midpoint": round((start + end) / 2, 3),
+            "text": seg.text.strip(),
+        })
+
     logger.info("Transcription complete — %d segments found.", len(segments))
 
     # ── 5. Optionally save to JSON ──
@@ -93,27 +101,6 @@ def transcribe_video(
     return segments
 
 
-def _build_segments(result: Dict[str, Any]) -> List[TranscriptSegment]:
-    """
-    Extract clean segment dicts from raw Whisper output.
-
-    Args:
-        result: Raw dict returned by whisper.transcribe().
-
-    Returns:
-        List of dicts with 'start', 'end', and 'text' keys.
-    """
-    segments: List[TranscriptSegment] = []
-    for seg in result.get("segments", []):
-        start = round(seg["start"], 3)
-        end = round(seg["end"], 3)
-        segments.append({
-            "start": start,
-            "end": end,
-            "midpoint": round((start + end) / 2, 3),
-            "text": seg["text"].strip(),
-        })
-    return segments
 
 
 def save_transcript(

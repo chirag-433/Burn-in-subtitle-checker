@@ -12,8 +12,8 @@ import sys
 # Ensure project root is importable
 sys.path.insert(0, os.path.dirname(__file__))
 
-from modules.mismatch_detector import compute_summary_statistics
-from modules.report_generator import generate_report
+from burnin_subtitle_checker.modules.mismatch_detector import compute_summary_statistics
+from burnin_subtitle_checker.modules.report_generator import generate_report
 
 SAMPLE_RESULTS = [
     {

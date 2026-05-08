@@ -136,16 +136,16 @@ You can pass a local video file or a YouTube URL directly:
 
 ```bash
 # Local video
-python main.py path/to/video.mp4
+python -m burnin_subtitle_checker run path/to/video.mp4
 
 # YouTube URL
-python main.py https://www.youtube.com/watch?v=YOUR_VIDEO_ID
+python -m burnin_subtitle_checker run https://www.youtube.com/watch?v=YOUR_VIDEO_ID
 ```
 
 ### Full Options
 
 ```bash
-python main.py video.mp4 \
+python -m burnin_subtitle_checker run video.mp4 \
     --model medium \
     --language hi kn \
     --threshold 70 \

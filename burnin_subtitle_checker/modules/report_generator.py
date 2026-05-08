@@ -11,7 +11,7 @@ from datetime import datetime
 from string import Template
 from typing import Any, Dict, List
 
-from modules.mismatch_detector import compute_summary_statistics
+from burnin_subtitle_checker.modules.mismatch_detector import compute_summary_statistics
 
 logger = logging.getLogger(__name__)
 

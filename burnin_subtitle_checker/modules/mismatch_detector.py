@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional
 
 from rapidfuzz import fuzz
 
-from utils.text_utils import format_timestamp, is_meaningful_text, normalize_indic_text
+from burnin_subtitle_checker.utils.text_utils import format_timestamp, is_meaningful_text, normalize_indic_text
 
 logger = logging.getLogger(__name__)
 

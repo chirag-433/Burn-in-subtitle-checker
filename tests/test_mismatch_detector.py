@@ -3,7 +3,7 @@ Unit tests for the mismatch_detector module.
 """
 
 import pytest
-from modules.mismatch_detector import (
+from burnin_subtitle_checker.modules.mismatch_detector import (
     detect_mismatches,
     compute_summary_statistics,
     STATUS_MATCH,
