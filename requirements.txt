@@ -17,7 +17,7 @@ colorama>=0.4.6
 # Testing
 pytest==8.2.2
 pytest-cov==5.0.0
-yt-dlp==2024.4.9
+yt-dlp>=2024.10.22
 
 # Optional: GPU support (uncomment if CUDA available)
 # torch>=2.0.0+cu118

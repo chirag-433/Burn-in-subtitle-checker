@@ -52,54 +52,41 @@ def main() -> int:
     video_path = args.video
     if video_path.startswith("http://") or video_path.startswith("https://"):
         from burnin_subtitle_checker.utils.youtube_downloader import download_video
-        _step_header("0", "Downloading video")
         try:
             video_path = download_video(video_path, output_dir="downloads")
         except Exception as exc:
             logger.exception("Failed to download video")
-            print(f"{Fore.RED}✗ Failed to download video: {exc}{Style.RESET_ALL}")
+            print(f"✗ Failed to download video: {exc}")
             return 1
     elif not os.path.isfile(video_path):
-        print(f"{Fore.RED}✗ Video file not found: {video_path}{Style.RESET_ALL}")
+        print(f"✗ Video file not found: {video_path}")
         return 1
 
     video_name = os.path.basename(video_path)
-    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-    report_dir = args.output_dir or os.path.join("reports", run_id)
-    os.makedirs(report_dir, exist_ok=True)
-
-    print(f"\n{Fore.CYAN}{'=' * 60}")
-    print(f"  Audio-Subtitle Mismatch Flagging Tool v{VERSION}")
-    print(f"{'=' * 60}{Style.RESET_ALL}")
-    print(f"  Video     : {video_name}")
-    print(f"  Model     : {args.model}")
-    print(f"  Languages : {', '.join(args.language)}")
-    print(f"  Threshold : {args.threshold}")
-    print(f"  Output    : {report_dir}")
-    print(f"{Fore.CYAN}{'=' * 60}{Style.RESET_ALL}\n")
-
+    base_dir = args.output_dir or "outputs"
+    os.makedirs(base_dir, exist_ok=True)
+    
     t_start = time.time()
 
     # ── Step 1: Audio Transcription ──
-    _step_header("1", "Transcribing audio with Whisper")
-    transcript_json = os.path.join(report_dir, "transcript.json") if args.save_intermediates else None
+    print("Step 1/3: Transcribing audio...")
+    transcript_json = os.path.join(base_dir, "transcription", "transcription.json")
     try:
         transcript = transcribe_video(
             video_path=video_path,
             model_size=args.model,
-            language=args.language[0],  # PR #10: always force language
+            language=args.language[0],
             output_json=transcript_json,
             device=args.device,
         )
     except Exception as exc:
         logger.exception("Transcription failed")
-        print(f"{Fore.RED}x Transcription failed: {exc}{Style.RESET_ALL}")
+        print(f"x Transcription failed: {exc}")
         return 1
-    print(f"  {Fore.GREEN}OK {len(transcript)} segments transcribed{Style.RESET_ALL}")
 
     # ── Step 2: Subtitle Extraction ──
-    _step_header("2", "Extracting subtitles via OCR")
-    subtitles_json = os.path.join(report_dir, "subtitles.json") if args.save_intermediates else None
+    print("Step 2/3: Extracting subtitles via OCR...")
+    subtitles_json = os.path.join(base_dir, "ocr", "ocr_segments.json")
     try:
         subtitles = extract_subtitles(
             video_path=video_path,
@@ -108,17 +95,16 @@ def main() -> int:
             crop_fraction=args.crop_fraction,
             output_json=subtitles_json,
             save_frames=args.save_frames,
-            frames_dir=os.path.join(report_dir, "frames") if args.save_frames else None,
+            frames_dir=os.path.join(base_dir, "frames") if args.save_frames else None,
         )
     except Exception as exc:
         logger.exception("Subtitle extraction failed")
-        print(f"{Fore.RED}x OCR extraction failed: {exc}{Style.RESET_ALL}")
+        print(f"x OCR extraction failed: {exc}")
         return 1
-    print(f"  {Fore.GREEN}OK {len(subtitles)} subtitle segments extracted{Style.RESET_ALL}")
 
     # ── Step 3: Mismatch Detection ──
-    _step_header("3", "Comparing transcripts")
-    results_json = os.path.join(report_dir, "results.json") if args.save_intermediates else None
+    print("Step 3/3: Comparing and generating report...")
+    results_json = os.path.join(base_dir, "results.json") if args.save_intermediates else None
     results = detect_mismatches(
         transcript_segments=transcript,
         subtitle_segments=subtitles,
@@ -126,16 +112,20 @@ def main() -> int:
         output_json=results_json,
     )
     stats = compute_summary_statistics(results)
-    _print_summary(stats)
 
     # ── Step 4: HTML Report ──
-    _step_header("4", "Generating HTML report")
-    report_path = os.path.join(report_dir, "report.html")
+    report_path = os.path.join(base_dir, "report", "report.html")
     generate_report(results, report_path, video_name=video_name)
-    print(f"  {Fore.GREEN}OK Report saved -> {report_path}{Style.RESET_ALL}")
 
+    print(f"\nTranscription: {transcript_json}")
+    print(f"OCR: {subtitles_json}")
+    print(f"Report: {report_path}")
+    print(f"Flagged: {stats['review_count'] + stats['missing_count']}/{stats['total_segments']}")
+    
     elapsed = time.time() - t_start
-    print(f"\n{Fore.CYAN}Done in {elapsed:.1f}s.{Style.RESET_ALL}\n")
+    mins = int(elapsed // 60)
+    secs = int(elapsed % 60)
+    print(f"Total time: {mins}m {secs}s")
     return 0
 
 
@@ -200,27 +190,8 @@ def _setup_logging(verbose: bool) -> None:
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(
         level=level,
-        format="%(asctime)s [%(levelname)s] %(name)s — %(message)s",
-        datefmt="%H:%M:%S",
+        format="%(levelname)s: %(message)s",
     )
-
-
-def _step_header(num: str, title: str) -> None:
-    print(f"\n{Fore.YELLOW}[Step {num}]{Style.RESET_ALL} {title}…")
-
-
-def _print_summary(stats: dict) -> None:
-    print(f"\n  {'-' * 40}")
-    print(f"  Total segments : {stats['total_segments']}")
-    if stats['total_segments'] == 0:
-        print(f"  No segments to compare.")
-        print(f"  {'-' * 40}")
-        return
-    print(f"  {Fore.GREEN}MATCH{Style.RESET_ALL}   : {stats['match_count']} ({stats['match_percentage']}%)")
-    print(f"  {Fore.YELLOW}REVIEW{Style.RESET_ALL}  : {stats['review_count']} ({stats['review_percentage']}%)")
-    print(f"  {Fore.RED}MISSING{Style.RESET_ALL} : {stats['missing_count']} ({stats['missing_percentage']}%)")
-    print(f"  Avg score      : {stats['average_score']}")
-    print(f"  {'-' * 40}")
 
 
 if __name__ == "__main__":

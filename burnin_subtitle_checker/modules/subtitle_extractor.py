@@ -74,10 +74,7 @@ def extract_subtitles(
         languages = ["hi", "kn"]
 
     tess_lang = _resolve_tesseract_lang(languages)
-    logger.info(
-        "Extracting subtitles — %d segments, Tesseract lang=%s, crop=%.0f%%",
-        len(segments), tess_lang, crop_fraction * 100,
-    )
+    logger.info("Extracted %d frames, running OCR...", len(segments))
 
     if save_frames:
         frames_dir = frames_dir or "frames"
@@ -87,7 +84,8 @@ def extract_subtitles(
 
     for idx, seg in enumerate(segments):
         midpoint = round((seg["start"] + seg["end"]) / 2, 3)
-        logger.debug("Segment %d/%d — midpoint %.3fs", idx + 1, len(segments), midpoint)
+        if (idx + 1) % 25 == 0:
+            logger.info("OCR progress: %d/%d", idx + 1, len(segments))
 
         # ── Capture frame ──
         frame = capture_frame(video_path, midpoint)

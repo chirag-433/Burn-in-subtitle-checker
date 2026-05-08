@@ -25,11 +25,9 @@ def download_video(url: str, output_dir: str = "downloads") -> str:
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'outtmpl': os.path.join(output_dir, '%(title)s.%(ext)s'),
         'merge_output_format': 'mp4',
-        'quiet': False,
+        'quiet': True,
         'no_warnings': True,
     }
-
-    logger.info("Downloading video from %s...", url)
     
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info_dict = ydl.extract_info(url, download=True)
@@ -39,6 +37,4 @@ def download_video(url: str, output_dir: str = "downloads") -> str:
         if not video_path.endswith('.mp4'):
             base, _ = os.path.splitext(video_path)
             video_path = f"{base}.mp4"
-            
-    logger.info("Video downloaded successfully to %s", video_path)
     return os.path.abspath(video_path)
